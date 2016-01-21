@@ -11,6 +11,8 @@ import java.awt.Frame;
 import java.io.File;
 import java.util.Optional;
 import javafx.application.Application;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -21,9 +23,13 @@ import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
+import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Toggle;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBoxBuilder;
 import javafx.scene.text.Text;
@@ -44,27 +50,29 @@ public class LocalWiotechStructureCreator extends Application {
         BorderPane root = new BorderPane();
         GridPane rootPane = new GridPane();
         
-        Label dbHost = new Label("DB Host");
-        TextField hostTxt = new TextField();
+        Label dbHost = new Label("Local Manager IP:");
+        TextField hostTxt = new TextField("localhost");
         
-        Label dbUser = new Label("DB User");
+        Label dbUser = new Label("Loacal Manager Database User:");
         TextField userTxt = new TextField();
         
-        Label dbPwd = new Label("DB Passwort");
+        Label dbPwd = new Label("Loacal Manager Database Passwort:");
         TextField pwdTxt = new TextField();
         
+        
+        Label choose = new Label("Wiotech Config File Name:");
         TextField fileTxt = new TextField();
-        DirectoryChooser dirChooser = new DirectoryChooser();
+        FileChooser fileChooser = new FileChooser();
+        FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("Wiotech Config File(*.config)", "*.config");
+        fileChooser.getExtensionFilters().add(extFilter);
+     
         
-        Label fileName = new Label("File Name");
-        TextField fileNameTxt = new TextField();
-        
-        Button chooseBtn = new Button("Choose Directory");
+        Button chooseBtn = new Button("Choose");
         chooseBtn.setOnAction(new EventHandler<ActionEvent>() {
             @Override public void handle(ActionEvent e) {
                 
                 
-                File selectedFile = dirChooser.showDialog(null);
+                File selectedFile = fileChooser.showSaveDialog(primaryStage);
                 
                 if (selectedFile != null) {
                     fileTxt.setText(selectedFile.getPath());
@@ -74,7 +82,8 @@ public class LocalWiotechStructureCreator extends Application {
             }
         });
         
-        Button startBtn = new Button("Start");
+
+        Button startBtn = new Button("Create Wiotech Config File");
         startBtn.setOnAction(new EventHandler<ActionEvent>() {
             @Override public void handle(ActionEvent e) {
             
@@ -84,12 +93,12 @@ public class LocalWiotechStructureCreator extends Application {
 
         
                 WiotechStructureCreator wsc = new WiotechStructureCreator(hostTxt.getText(), 3306, "db_lm_cbv2", 
-                        userTxt.getText(), pwdTxt.getText(), (fileTxt.getText() + "/" + fileNameTxt.getText()));
+                        userTxt.getText(), pwdTxt.getText(), (fileTxt.getText()));
                     
                 Alert alert = new Alert(AlertType.INFORMATION);
                 alert.setTitle("Structure Creator");
                 alert.setHeaderText(null);
-                alert.setContentText("Sensor Structure saved in" + fileTxt.getText() + "/" + fileNameTxt.getText());
+                alert.setContentText("Sensor Structure saved in" + fileTxt.getText());
 
                 Optional<ButtonType> result = alert.showAndWait();
                 if (result.get() == ButtonType.OK) {
@@ -97,29 +106,24 @@ public class LocalWiotechStructureCreator extends Application {
                 } else {
                     // ... user chose CANCEL or closed the dialog
                 }
-                
+  
                 
             }
         });
         
          
         
-        hostTxt.setPrefWidth(200);
+        /*hostTxt.setPrefWidth(200);
         userTxt.setPrefWidth(200);
-        pwdTxt.setPrefWidth(200);
+        pwdTxt.setPrefWidth(200);*/
         
-       /* DirectoryChooser chooser = new DirectoryChooser();
-        chooser.setTitle("JavaFX Projects");
-        File defaultDirectory = new File("c:/dev/javafx");
-        chooser.setInitialDirectory(defaultDirectory);
-        File selectedDirectory = chooser.showDialog(primaryStage);*/
         
-        rootPane.addRow(0, dbHost, hostTxt);
-        rootPane. addRow(1, dbUser, userTxt);
-        rootPane.addRow(2, dbPwd, pwdTxt);
-        rootPane.addRow(3, chooseBtn, fileTxt);
-        rootPane.addRow(4, fileName, fileNameTxt);
-        rootPane.addRow(5, startBtn);
+        int i = 0;
+        rootPane.addRow(i++, dbHost, hostTxt);
+        rootPane. addRow(i++, dbUser, userTxt);
+        rootPane.addRow(i++, dbPwd, pwdTxt);
+        rootPane.addRow(i++, choose,fileTxt,chooseBtn );
+        rootPane.addRow(i++, startBtn);
        // rootPane.addRow(4, chooser.);
         
         rootPane.setHgap(10);//horizontal gap in pixels 
@@ -129,9 +133,9 @@ public class LocalWiotechStructureCreator extends Application {
         root.setTop(rootPane);
        // root.getChildren().add(rootPane);
         
-        Scene scene = new Scene(root, 400, 300);
+        Scene scene = new Scene(root);
         
-        primaryStage.setTitle("Offline Wiotech Structure Creator");
+        primaryStage.setTitle("Offline Wiotech Config File Creator");
         primaryStage.setScene(scene);
         primaryStage.show();
     }
